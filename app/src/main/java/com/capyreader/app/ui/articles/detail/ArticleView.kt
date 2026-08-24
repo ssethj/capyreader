@@ -17,10 +17,12 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -30,6 +32,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.paging.compose.LazyPagingItems
+import com.capyreader.app.VolumeKeyNavigationBridge
 import com.capyreader.app.common.AudioEnclosure
 import com.capyreader.app.common.Media
 import com.capyreader.app.preferences.AppPreferences
@@ -65,9 +68,11 @@ fun ArticleView(
     isAudioPlaying: Boolean = false,
     isFullscreen: Boolean = false,
     onToggleFullscreen: () -> Unit = {},
-    appPreferences: AppPreferences = koinInject()
+    appPreferences: AppPreferences = koinInject(),
+    volumeKeyNavigationBridge: VolumeKeyNavigationBridge = koinInject()
 ) {
     val enableHorizontalPager by appPreferences.readerOptions.enableHorizontaPagination.collectChangesWithDefault()
+    val enableVolumeKeyNavigation by appPreferences.readerOptions.enableVolumeKeyNavigation.collectChangesWithDefault()
     val fullContent = LocalFullContent.current
     val openLink = articleOpenLink(article)
 
@@ -108,6 +113,27 @@ fun ArticleView(
 
         articles[nextIndex]?.let {
             onSelectArticle(it.id)
+        }
+    }
+
+    val currentSelectPrevious = rememberUpdatedState { selectPrevious() }
+    val currentSelectNext = rememberUpdatedState { selectNext() }
+
+    val volumeKeyOwner = remember { Any() }
+
+    DisposableEffect(volumeKeyOwner, enableVolumeKeyNavigation) {
+        if (enableVolumeKeyNavigation) {
+            volumeKeyNavigationBridge.register(
+                volumeKeyOwner,
+                VolumeKeyNavigationBridge.Callbacks(
+                    onSelectPreviousArticle = { currentSelectPrevious.value() },
+                    onSelectNextArticle = { currentSelectNext.value() },
+                )
+            )
+        }
+
+        onDispose {
+            volumeKeyNavigationBridge.unregister(volumeKeyOwner)
         }
     }
 

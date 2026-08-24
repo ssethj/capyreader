@@ -40,6 +40,9 @@ class GesturesSettingsViewModel(
     var improveTalkback by mutableStateOf(readerOptions.improveTalkback.get())
         private set
 
+    var enableVolumeKeyNavigation by mutableStateOf(readerOptions.enableVolumeKeyNavigation.get())
+        private set
+
     fun updateBackAction(action: BackAction) {
         backAction = action
 
@@ -101,6 +104,12 @@ class GesturesSettingsViewModel(
         enablePagingTapGesture = enabled
 
         readerOptions.enablePagingTapGesture.set(enabled)
+    }
+
+    fun updateVolumeKeyNavigation(enabled: Boolean) {
+        enableVolumeKeyNavigation = enabled
+
+        readerOptions.enableVolumeKeyNavigation.set(enabled)
     }
 
     private val readerOptions: AppPreferences.ReaderOptions
