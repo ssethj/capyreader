@@ -126,6 +126,9 @@ class AppPreferences(context: Context) {
         val improveTalkback: Preference<Boolean>
             get() = preferenceStore.getBoolean("article_improve_talkback", false)
 
+        val enableVolumeKeyNavigation: Preference<Boolean>
+            get() = preferenceStore.getBoolean("article_enable_volume_key_navigation", false)
+
         val titleTextAlignment: Preference<TextAlignment>
             get() = preferenceStore.getEnum("article_title_text_alignment", TextAlignment.default)
 
